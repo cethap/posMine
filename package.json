@@ -1,0 +1,14 @@
+{
+    "name": "of",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "start": "PGUSER=postgres PGHOST=aqui-pos.local PGPASSWORD=\"I$h3r3\" PGDATABASE=aqui PGPORT=5432 node ."
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "pg": "^7.2.0"
+    }
+}
