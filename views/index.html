@@ -23,23 +23,43 @@
 
     <!--   Icon Section   -->
     <div class="row" id="app">
+        <div v-if="edit">
+            <div class="input-field col s3">
+                <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty">
+                <label for="barcode">Codigo de barras</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty">
+                <label for="name">Nombre</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="qty" type="number" class="validate" v-model="qtyProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
+                <label for="qty">Cantidad</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="price" type="number" class="validate" v-model="PriceProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
+                <label for="price">Precio</label>
+            </div>
+        </div>
 
-        <div class="input-field col s3">
-            <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty">
-            <label for="barcode">Codigo de barras</label>
+        <div v-if="!edit">
+            <div class="input-field col s3">
+                <input id="barcode" type="text" class="validate" v-model="Nproduct.barcode" v-on:keyup.enter="addproduct">
+                <label for="barcode">Codigo de barras aaa</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="name" type="text" class="validate" v-model="Nproduct.product" v-on:keyup.enter="addproduct">
+                <label for="name">Nombre</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="qty" type="number" class="validate" v-model="Nproduct.qty" v-on:keyup.enter="addproduct">
+                <label for="qty">Cantidad</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="price" type="number" class="validate" v-model="Nproduct.list_price" v-on:keyup.enter="addproduct">
+                <label for="price">Precio</label>
+            </div>
         </div>
-        <div class="input-field col s3">
-            <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty">
-            <label for="name">Nombre</label>
-        </div>
-        <div class="input-field col s3">
-            <input id="qty" type="number" class="validate" v-model="qtyProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
-            <label for="qty">Cantidad</label>
-        </div>
-        <!-- <div class="input-field col s3">
-            <input id="price" type="number" class="validate" :disabled="!productSelected">
-            <label for="price">Precio</label>
-        </div> -->
 
         <div class="col s12">
             <table class="striped">
@@ -51,7 +71,7 @@
                         <th>Precio de venta</th>
                         <th>Cantidad</th>
                         <th>
-                            <a class="btn-floating waves-effect waves-light red">
+                            <a class="btn-floating waves-effect waves-light red" v-on:click="edit=false">
                                 <i class="material-icons">add_circle</i>
                             </a>
                         </th>
@@ -59,7 +79,7 @@
                 </thead>
 
                 <tbody>
-                    <tr v-for="product in productFilter">
+                    <tr v-for="product in productFilter" v-on:click="setProduct(product)">
                         <td>{{product.barcode}}</td>
                         <td>{{product.product}}</td>
                         <td>{{product.category}}</td>
