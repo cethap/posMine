@@ -6,9 +6,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/style.css" rel="stylesheet">
+    <link href="css/materialize.min.css" rel="stylesheet">
+    <link href="css/icons.css" rel="stylesheet">
+    <script src="js/vue.min.js"></script>
 </head>
 
 <body>
+
+
+    <nav class="red lighten-1" role="navigation">
+        <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo" tabindex="-1">Aqui/Inventario</a>
+        </div>
+    </nav>
+
+    <br>
+
+    <!--   Icon Section   -->
+    <div class="row" id="app">
+
+        <div class="input-field col s3">
+            <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty">
+            <label for="barcode">Codigo de barras</label>
+        </div>
+        <div class="input-field col s3">
+            <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty">
+            <label for="name">Nombre</label>
+        </div>
+        <div class="input-field col s3">
+            <input id="qty" type="number" class="validate" v-model="qtyProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
+            <label for="qty">Cantidad</label>
+        </div>
+        <!-- <div class="input-field col s3">
+            <input id="price" type="number" class="validate" :disabled="!productSelected">
+            <label for="price">Precio</label>
+        </div> -->
+
+        <div class="col s12">
+            <table class="striped">
+                <thead>
+                    <tr>
+                        <th>Código de barras</th>
+                        <th>Nombre</th>
+                        <th>Categoria</th>
+                        <th>Precio de venta</th>
+                        <th>Cantidad</th>
+                        <th>
+                            <a class="btn-floating waves-effect waves-light red">
+                                <i class="material-icons">add_circle</i>
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="product in productFilter">
+                        <td>{{product.barcode}}</td>
+                        <td>{{product.product}}</td>
+                        <td>{{product.category}}</td>
+                        <td>{{product.list_price}}</td>
+                        <td>{{product.qty || 0}}</td>
+                        <td>
+                            <!-- <a class="btn-floating waves-effect waves-light red">
+                                <i class="material-icons">mode_edit</i>
+                            </a> -->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 
 </html>
