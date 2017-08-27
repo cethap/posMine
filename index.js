@@ -1,15 +1,23 @@
 process.env.PGPASSWORD = "I$h3r3";
 process.env.PGHOST = "aqui-pos.local";
 
-var Client = require('pg').Client;
-var client = new Client();
+var express = require('express');
+var service = require('./service');
+var app = express();
 
 
-console.log(process.env.PGHOST, process.env.PGUSER, process.env.PGPASSWORD, process.env.PGDATABASE, process.env.PGPORT)
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/views/index.html');
+});
 
-client.connect().then(function() {
-    client.query('select * from product_product', function(err, res) {
-        console.log(err ? err.stack : res.rows) // Hello World!
-        client.end();
+app.get('/products', function(req, res) {
+    service.get_products().then(function(data) {
+        res.send(data);
+    });
+});
+
+service.connect().then(function() {
+    app.listen(3000, function() {
+        console.log('Example app listening on port 3000!')
     });
 });

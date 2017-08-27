@@ -4,11 +4,14 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "PGUSER=postgres PGHOST=aqui-pos.local PGPASSWORD=\"I$h3r3\" PGDATABASE=aqui PGPORT=5432 node ."
+        "start": "PGUSER=postgres PGDATABASE=aqui PGPORT=5432 nodemon --inspect=5858 ."
     },
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "express": "^4.15.4",
+        "node-odoo": "0.0.2",
+        "odoo-xmlrpc": "^1.0.6",
         "pg": "^7.2.0"
     }
 }
