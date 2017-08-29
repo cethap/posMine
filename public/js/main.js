@@ -52,7 +52,7 @@ var app = new Vue({
             this.Nproduct = {};
         },
         serQty: function() {
-            if (this.productSelected && this.qtyProduct.length > 1) {
+            if (this.productSelected && this.qtyProduct.length > 0) {
 
                 this.currentProduct.qty = parseInt(this.qtyProduct, 10);
 
@@ -63,7 +63,7 @@ var app = new Vue({
                     var element = pro[index];
                     if (element.id == this.currentProduct.id) {
                         element.qty = parseInt(this.qtyProduct, 10);
-                        element.list_price = this.PriceProduct;
+                        //element.list_price = this.PriceProduct;
                         found = true;
                     }
                 }
@@ -78,7 +78,7 @@ var app = new Vue({
                 this.barcode = '';
                 this.nameProduct = '';
                 this.qtyProduct = '';
-                this.PriceProduct = '';
+                //this.PriceProduct = '';
                 this.enabledQty = false;
                 this.editQty = false;
 
@@ -95,7 +95,7 @@ var app = new Vue({
             this.barcode = '';
             this.nameProduct = '';
             this.qtyProduct = '';
-            this.PriceProduct = '';
+            //this.PriceProduct = '';
             this.currentProduct = null;
             this.enabledQty = false;
             this.editQty = false;
@@ -149,7 +149,7 @@ var app = new Vue({
                 self.barcode = products[0].barcode;
                 self.nameProduct = products[0].product;
                 self.qtyProduct = products[0].qty || '';
-                self.PriceProduct = products[0].list_price || '';
+                //self.PriceProduct = products[0].list_price || '';
 
             } else {
                 self.productSelected = false;

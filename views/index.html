@@ -36,10 +36,10 @@
                 <input id="qty" type="number" class="validate" v-model="qtyProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
                 <label for="qty">Cantidad</label>
             </div>
-            <div class="input-field col s3">
+            <!-- <div class="input-field col s3">
                 <input id="price" type="number" class="validate" v-model="PriceProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
                 <label for="price">Precio</label>
-            </div>
+            </div> -->
         </div>
 
         <div v-if="!edit">

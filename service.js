@@ -104,20 +104,42 @@ module.exports = {
             });
         });
     },
-    add_inventory_product: function(product, inv) {
+    add_inventory_product: function(data) {
+
+        var pro = data.products.split('\n');
+        var products = [];
+        for (var i = 0; i < pro.length; i++) {
+            var element = pro[i].split(';');
+            products.push(element);
+        }
+
+        function update(element) {
+            new Promise(function(rs, rj) {
+                if (!odooJIsConnect) return rs({ connect: false });
+                var inParams = {
+                    'inventory_id': element[0],
+                    'product_id': parseInt(element[1], 10),
+                    'product_qty': parseInt(element[2], 10),
+                    'location_id': 15
+                };
+                odoo.create('stock.inventory.line', inParams, function(err, product_inv) {
+                    if (err) return rj(JSON.stringify(err));
+                    console.log(product_inv);
+                    rs(product_inv);
+                });
+            })
+        }
+
+        var actions = products.map(update);
+
         return new Promise(function(rs, rj) {
-            if (!odooJIsConnect) return rs({ connect: false });
-            var inParams = {
-                'inventory_id': inv.id,
-                'product_id': product,
-                'product_qty': product.qty,
-                'location_id': inv.location || 15
-            };
-            odoo.create('stock.inventory.line', inParams, function(err, product_inv) {
-                if (err) return rj(err);
-                rs(product_inv);
+            Promise.all(actions).then(function() {
+                rs();
+            }).catch(function(data) {
+                console.error(".......", data);
             });
         });
+
     },
     inventory_done: function(id_inv) {
         return new Promise(function(rs, rj) {

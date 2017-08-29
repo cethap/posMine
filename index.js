@@ -38,6 +38,15 @@ app.post('/crear_productos_masivos', function(req, res) {
     res.send('aaa');
 });
 
+app.get('/agregar_inventario', function(req, res) {
+    res.sendFile(__dirname + '/views/agregar_inventario.html');
+});
+
+app.post('/agregar_inventario', function(req, res) {
+    service.add_inventory_product(req.body);
+    res.send('aaa');
+});
+
 
 service.connect().then(function() {
     app.listen(3000, function() {

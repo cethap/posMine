@@ -20,7 +20,14 @@ var app = new Vue({
             $.post("/crear_productos_masivos", { products: self.products }, function(data) {
 
             });
-        }
+        },
+        addToInventory: function() {
+            var self = this;
+            console.log(self.products)
+            $.post("/agregar_inventario", { products: self.products }, function(data) {
+
+            });
+        },
     }
 });
 
