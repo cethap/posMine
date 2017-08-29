@@ -4,9 +4,9 @@ var Odoo = require('node-odoo');
 var Odoo2 = require('odoo-xmlrpc');
 
 var paramsEnv = {
-    host: 'aqui-pos.local',
+    host: 'localhost',
     port: 8069,
-    database: 'aqui',
+    database: 'testImp',
     username: 'caja@aqui.com',
     password: 'Aqui123'
 }
@@ -32,6 +32,12 @@ var odooXIsConnect = false;
 var odooDBIsConnect = false;
 
 
+function con(pro, arr, index) {
+    if (index == arr.length) return;
+    let next = index + 1;
+    con(pro.then(arr[index]), arr, next);
+}
+
 module.exports = {
     connect: function() {
         var odooJ = new Promise(function(rs, rj) {
@@ -55,8 +61,10 @@ module.exports = {
         var odooDB = new Promise(function(rs, rj) {
             client.connect().then(function() {
                 odooDBIsConnect = true;
+                console.log('Connected to DB');
                 rs();
-            }).catch(function() {
+            }).catch(function(err) {
+                console.log('no Connected to DB',err);
                 odooDBIsConnect = false;
             });
         });
@@ -107,14 +115,10 @@ module.exports = {
     add_inventory_product: function(data) {
 
         var pro = data.products.split('\n');
-        var products = [];
-        for (var i = 0; i < pro.length; i++) {
-            var element = pro[i].split(';');
-            products.push(element);
-        }
+        var intelval = [];
 
         function update(element) {
-            new Promise(function(rs, rj) {
+            return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
                 var inParams = {
                     'inventory_id': element[0],
@@ -123,22 +127,45 @@ module.exports = {
                     'location_id': 15
                 };
                 odoo.create('stock.inventory.line', inParams, function(err, product_inv) {
-                    if (err) return rj(JSON.stringify(err));
+                    if (err) return rj(err.data.message);
                     console.log(product_inv);
                     rs(product_inv);
                 });
             })
         }
 
-        var actions = products.map(update);
+        for (var i = 0; i < pro.length; i++) {
+            if (i == 19 || i == pro.length - 1) {
+                let range = pro.splice(0, i + 1);
+                intelval.push(function() {
+                    return new Promise(function(rs, rj) {
+                        let lp = [];
+                        for (y = 0; y < range.length; y++) {
+                            lp.push(new Promise(function(rs, rj) {
+                                let dat = JSON.parse(JSON.stringify(range[y]));
+                                dat = dat.split(';');
+                                update(dat).then(function (params) {
+                                    rs(dat);
+                                }).catch(function(err) {
+                                    rs(dat);
+                                    console.error(err);
+                                })
+                            }))
+                        }
+                        Promise.all(lp).then(function(data) {
+                            rs(data);
+                            console.log("se termino", data);
+                        }).catch(function(data) {
+                            rj(data);
+                            console.log(data);
+                        });
+                    });
+                });
+                i = 0;
+            }
+        }        
 
-        return new Promise(function(rs, rj) {
-            Promise.all(actions).then(function() {
-                rs();
-            }).catch(function(data) {
-                console.error(".......", data);
-            });
-        });
+        con(Promise.resolve(), intelval, 0);
 
     },
     inventory_done: function(id_inv) {
