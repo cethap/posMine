@@ -79,24 +79,39 @@ module.exports = {
     get_products: function() {
         return new Promise(function(rs, rj) {
             if (!odooDBIsConnect) return rs({ connect: false });
-            client.query(`
-                SELECT 
-                    pp.id, pt.name product, pp.product_tmpl_id, pp.barcode, 
-                    pt.list_price, pt.description_sale, pt.location_id,
-                    pt.description, pt.type, pc.name category
-                FROM 
-                    product_product pp, 
-                    product_template pt
-                    LEFT JOIN
-                    pos_category pc ON pt.pos_categ_id = pc.id
-                WHERE 
-                    pt.id = pp.product_tmpl_id AND pp.active = true 
-                ORDER BY product ASC
-            `, function(err, res) {
-                //client.end();
-                if (err) return rj(err);
-                rs(res.rows);
+            
+            var inParams = [];
+            inParams.push([]);
+            var params = [];
+            params.push(inParams);
+            odooXML.execute_kw('product.product', 'search', params, function (err, value) {
+                if (err) { return console.log(err); }
+                odooXML.execute_kw('product.product', 'read', [[value,[
+                      'id','name','barcode','list_price','description_sale','location_id','description','pos_categ_id','qty_available'
+                ]]], function (err, value) {
+                    if (err) { return console.log(err); }
+                    rs(value);
+                });
             });
+
+            // client.query(`
+            //     SELECT 
+            //         pp.id, pt.name product, pp.product_tmpl_id, pp.barcode, 
+            //         pt.list_price, pt.description_sale, pt.location_id,
+            //         pt.description, pt.type, pc.name category
+            //     FROM 
+            //         product_product pp, 
+            //         product_template pt
+            //         LEFT JOIN
+            //         pos_category pc ON pt.pos_categ_id = pc.id
+            //     WHERE 
+            //         pt.id = pp.product_tmpl_id AND pp.active = true 
+            //     ORDER BY product ASC
+            // `, function(err, res) {
+            //     //client.end();
+            //     if (err) return rj(err);
+            //     rs(res.rows);
+            // });
         })
     },
     new_inventory: function(inv) {
@@ -104,7 +119,8 @@ module.exports = {
             if (!odooJIsConnect) return rs({ connect: false });
             var inParams = {
                 'name': inv.name,
-                'filter': 'partial'
+                'filter': 'partial',
+                'state': 'confirm'
             };
             odoo.create('stock.inventory', inParams, function(err, inventory) {
                 if (err) return rj(err);
@@ -112,23 +128,23 @@ module.exports = {
             });
         });
     },
-    add_inventory_product: function(data) {
-
-        var pro = data.products.split('\n');
+    add_inventory_product: function(pro,callback) {
         var intelval = [];
 
         function update(element) {
             return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
+                if(!element.id) return rs({ id: false });
+
                 var inParams = {
-                    'inventory_id': element[0],
-                    'product_id': parseInt(element[1], 10),
-                    'product_qty': parseInt(element[2], 10),
+                    'inventory_id': element.inv,
+                    'product_id': parseInt(element.id, 10),
+                    'product_qty': parseInt(element.qty, 10),
                     'location_id': 15
                 };
                 odoo.create('stock.inventory.line', inParams, function(err, product_inv) {
                     if (err) return rj(err.data.message);
-                    console.log(product_inv);
+                    console.log("fine add_inventory_product",product_inv);
                     rs(product_inv);
                 });
             })
@@ -143,7 +159,6 @@ module.exports = {
                         for (y = 0; y < range.length; y++) {
                             lp.push(new Promise(function(rs, rj) {
                                 let dat = JSON.parse(JSON.stringify(range[y]));
-                                dat = dat.split(';');
                                 update(dat).then(function (params) {
                                     rs(dat);
                                 }).catch(function(err) {
@@ -154,16 +169,18 @@ module.exports = {
                         }
                         Promise.all(lp).then(function(data) {
                             rs(data);
-                            console.log("se termino", data);
+                            //console.log("se termino", data);
                         }).catch(function(data) {
                             rj(data);
-                            console.log(data);
+                            console.log('error',data);
                         });
                     });
                 });
                 i = 0;
             }
-        }        
+        }
+
+        intelval.push(callback);
 
         con(Promise.resolve(), intelval, 0);
 
@@ -198,37 +215,61 @@ module.exports = {
             });
         });
     },
-    update_lote_product_price: function(data) {
-        var pro = data.products.split('\n');
-        var products = [];
-        for (var i = 0; i < pro.length; i++) {
-            var element = pro[i].split(';');
-            products.push(element);
-        }
+    update_lote_product_price: function(product,callback) {
+        var intelval = [];
 
         function update(element) {
-            new Promise(function(rs, rj) {
+            return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
+                if(!element.id) return rs({ id: false });
                 var inParams = {
-                    'lst_price': element[1]
+                    'list_price': element.list_price,
+                    'name': element.product
                 };
-                odoo.update('product.product', parseInt(element[0], 10), inParams, function(err, product) {
+                if(element.barcode){
+                    inParams.barcode = element.barcode;
+                }
+                odoo.update('product.product', parseInt(element.id, 10), inParams, function(err, product) {
                     if (err) return rj({ err: err, element: element });
                     rs(product);
-                    console.log("fine", product);
+                    console.log("fine update_lote_product_price", product);
                 });
             })
         }
 
-        var actions = products.map(update);
+        for (var i = 0; i < product.length; i++) {
+            if (i == 19 || i == product.length - 1) {
+                let range = product.splice(0, i + 1);
+                intelval.push(function() {
+                    return new Promise(function(rs, rj) {
+                        let lp = [];
+                        for (y = 0; y < range.length; y++) {
+                            lp.push(new Promise(function(rs, rj) {
+                                let dat = JSON.parse(JSON.stringify(range[y]));
+                                update(dat).then(function (params) {
+                                    rs(dat);
+                                }).catch(function(err) {
+                                    rs(dat);
+                                    console.error(err);
+                                })
+                            }))
+                        }
+                        Promise.all(lp).then(function(data) {
+                            rs(data);
+                            //console.log("se termino update_lote_product_price");
+                        }).catch(function(data) {
+                            rj(data);
+                            console.log('error',data);
+                        });
+                    });
+                });
+                i = 0;
+            }
+        }
 
-        return new Promise(function(rs, rj) {
-            Promise.all(actions).then(function() {
-                rs();
-            }).catch(function(data) {
-                console.error(".......", data);
-            });
-        });
+        intelval.push(callback);
+
+        con(Promise.resolve(), intelval, 0);
     },
     crear_productos_masivos: function(data) {
         var pro = data.products.split('\n');
@@ -247,8 +288,6 @@ module.exports = {
                     'supplier_taxes_id': null,
                     'type': 'product'
                 };
-
-                console.log(",,,,,,,", inParams);
 
                 odoo.create('product.product', inParams, function(err, product) {
                     if (err) return rj({ err: err, element: element });

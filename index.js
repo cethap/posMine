@@ -1,5 +1,8 @@
-process.env.PGPASSWORD = "I$h3r3";
-process.env.PGHOST = "aqui-pos.local";
+process.env.PGUSER = "openpg";
+process.env.PGDATABASE = "testImp";
+process.env.PGPORT = 5432;
+process.env.PGPASSWORD = "openpgpwd";
+process.env.PGHOST = "localhost";
 
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -45,6 +48,28 @@ app.get('/agregar_inventario', function(req, res) {
 app.post('/agregar_inventario', function(req, res) {
     service.add_inventory_product(req.body);
     res.send('aaa');
+});
+
+
+app.post('/new_inventary', function(req, res) {
+    service.new_inventory({name:"Inventario "+(new Date()).toGMTString()}).then(function(data){
+        let p = JSON.parse(req.body.products);
+        for(i=0;i<p.length;i++){
+            p[i].inv = data;
+        }
+        p = JSON.stringify(p);
+
+        service.update_lote_product_price(JSON.parse(p),function(rs1){
+            service.add_inventory_product(JSON.parse(p),function(rs2){
+                service.inventory_done(data).then(function(){
+                    res.send(JSON.parse(p),rs1,rs2);
+                });
+            });
+        });
+
+    }).catch(function(err){
+        res.send({error:err});
+    });
 });
 
 

@@ -29,6 +29,11 @@ var app = new Vue({
 
                 for (var i = 0; i < self.products.length; i++) {
                     var e = self.products[i];
+                    e.product = e.name;
+                    e.qty = e.qty_available || 0;
+                    if(e.pos_categ_id){
+                        e.category = e.pos_categ_id[1];
+                    }
                     var search = true;
                     for (var y = 0; search && y < pro.length; y++) {
                         if(!pro[y].id){
@@ -166,7 +171,7 @@ var app = new Vue({
         newInventory: function() {
             var self = this;
             $.post("/new_inventary", { products: localStorage.getItem("productsInv") }, function(data) {
-
+                localStorage.removeItem("productsInv");
             });
         }        
     },
