@@ -19,45 +19,47 @@
         </div>
     </nav>
 
-    <br>
-
     <!--   Icon Section   -->
     <div class="row" id="app">
         <div v-if="edit">
+            <h5 style="text-align:center">Editar</h5>
+            <hr>
             <div class="input-field col s3">
-                <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty">
-                <label for="barcode">Codigo de barras</label>
+                <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty" v-on:keyup.esc="exitQty">
+                <label for="barcode" class="active mdl-textfield--floating-label">Codigo de barras</label>
             </div>
             <div class="input-field col s3">
-                <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty">
-                <label for="name">Nombre</label>
+                <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty" v-on:keyup.esc="exitQty">
+                <label for="name" class="active mdl-textfield--floating-label">Nombre</label>
             </div>
             <div class="input-field col s3">
                 <input id="qty" type="number" class="validate" v-model="qtyProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
-                <label for="qty">Cantidad</label>
+                <label for="qty" class="active mdl-textfield--floating-label">Cantidad</label>
             </div>
-            <!-- <div class="input-field col s3">
+            <div class="input-field col s3">
                 <input id="price" type="number" class="validate" v-model="PriceProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
-                <label for="price">Precio</label>
-            </div> -->
+                <label for="price" class="active mdl-textfield--floating-label">Precio</label>
+            </div>
         </div>
 
         <div v-if="!edit">
+            <h5 style="text-align:center">Nuevo</h5>
+            <hr>
             <div class="input-field col s3">
-                <input id="barcode" type="text" class="validate" v-model="Nproduct.barcode" v-on:keyup.enter="addproduct">
-                <label for="barcode">Codigo de barras aaa</label>
+                <input id="barcodeN" type="text" class="validate" v-model="Nproduct.barcode" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="barcodeN" class="active mdl-textfield--floating-label">Codigo de barras</label>
             </div>
             <div class="input-field col s3">
-                <input id="name" type="text" class="validate" v-model="Nproduct.product" v-on:keyup.enter="addproduct">
-                <label for="name">Nombre</label>
+                <input id="nameN" type="text" class="validate" v-model="Nproduct.product" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="nameN" class="active mdl-textfield--floating-label">Nombre</label>
             </div>
             <div class="input-field col s3">
-                <input id="qty" type="number" class="validate" v-model="Nproduct.qty" v-on:keyup.enter="addproduct">
-                <label for="qty">Cantidad</label>
+                <input id="qtyN" type="number" class="validate" v-model="Nproduct.qty" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="qtyN" class="active mdl-textfield--floating-label">Cantidad</label>
             </div>
             <div class="input-field col s3">
-                <input id="price" type="number" class="validate" v-model="Nproduct.list_price" v-on:keyup.enter="addproduct">
-                <label for="price">Precio</label>
+                <input id="priceN" type="number" class="validate" v-model="Nproduct.list_price" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="priceN" class="active mdl-textfield--floating-label">Precio</label>
             </div>
         </div>
 
@@ -71,7 +73,7 @@
                         <th>Precio de venta</th>
                         <th>Cantidad</th>
                         <th>
-                            <a class="btn-floating waves-effect waves-light red" v-on:click="edit=false">
+                            <a class="btn-floating waves-effect waves-light red" v-on:click="setNewMode">
                                 <i class="material-icons">add_circle</i>
                             </a>
                         </th>
@@ -79,23 +81,28 @@
                 </thead>
 
                 <tbody>
-                    <tr v-for="product in productFilter" v-on:click="setProduct(product)">
+                    <tr v-for="(product, indx) in productFilter" v-on:click="setProduct(product)">
                         <td>{{product.barcode}}</td>
                         <td>{{product.product}}</td>
                         <td>{{product.category}}</td>
                         <td>{{product.list_price}}</td>
                         <td>{{product.qty || 0}}</td>
                         <td>
-                            <!-- <a class="btn-floating waves-effect waves-light red">
-                                <i class="material-icons">mode_edit</i>
-                            </a> -->
+                            <a class="btn-floating waves-effect waves-light red" v-if="!product.id" v-on:click="removeProduct(indx,$event)">
+                                <i class="material-icons">remove_circle_outline</i>
+                            </a>
                         </td>
                     </tr>
                 </tbody>
             </table>
+
+            <button class="btn waves-effect waves-light" v-on:click="newInventory">
+                    Crear Inventario
+                <i class="material-icons right">send</i>
+            </button>            
+
         </div>
     </div>
-
 
 
     <script src="js/jquery-3.2.1.min.js"></script>
