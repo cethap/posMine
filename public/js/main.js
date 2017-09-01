@@ -182,6 +182,9 @@ var app = new Vue({
                 if (!product.barcode) {
                     product.barcode = '';
                 }
+                if (!product.product) {
+                    return false;
+                }                
                 return product.barcode.toLowerCase()
                     .indexOf(self.barcode.toLowerCase()) >= 0 &&
                     product.product.toLowerCase()
