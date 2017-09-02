@@ -6,7 +6,7 @@ var Odoo2 = require('odoo-xmlrpc');
 var paramsEnv = {
     host: 'localhost',
     port: 8069,
-    database: 'testImp',
+    database: 'aqui',
     username: 'caja@aqui.com',
     password: 'Aqui123'
 }
@@ -64,7 +64,7 @@ module.exports = {
                 console.log('Connected to DB');
                 rs();
             }).catch(function(err) {
-                console.log('no Connected to DB',err);
+                console.log('no Connected to DB', err);
                 odooDBIsConnect = false;
             });
         });
@@ -79,16 +79,18 @@ module.exports = {
     get_products: function() {
         return new Promise(function(rs, rj) {
             if (!odooDBIsConnect) return rs({ connect: false });
-            
+
             var inParams = [];
             inParams.push([]);
             var params = [];
             params.push(inParams);
-            odooXML.execute_kw('product.product', 'search', params, function (err, value) {
+            odooXML.execute_kw('product.product', 'search', params, function(err, value) {
                 if (err) { return console.log(err); }
-                odooXML.execute_kw('product.product', 'read', [[value,[
-                      'id','name','barcode','list_price','description_sale','location_id','description','pos_categ_id','qty_available'
-                ]]], function (err, value) {
+                odooXML.execute_kw('product.product', 'read', [
+                    [value, [
+                        'id', 'name', 'barcode', 'list_price', 'description_sale', 'location_id', 'description', 'pos_categ_id', 'qty_available'
+                    ]]
+                ], function(err, value) {
                     if (err) { return console.log(err); }
                     rs(value);
                 });
@@ -128,13 +130,14 @@ module.exports = {
             });
         });
     },
-    add_inventory_product: function(pro,callback) {
+    add_inventory_product: function(pro, callback) {
         var intelval = [];
+        if (!callback) callback = function() {};
 
         function update(element) {
             return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
-                if(!element.id) return rs({ id: false });
+                if (!element.id) return rs({ id: false });
 
                 var inParams = {
                     'inventory_id': element.inv,
@@ -144,7 +147,7 @@ module.exports = {
                 };
                 odoo.create('stock.inventory.line', inParams, function(err, product_inv) {
                     if (err) return rj(err.data.message);
-                    console.log("fine add_inventory_product",product_inv);
+                    console.log("fine add_inventory_product", product_inv);
                     rs(product_inv);
                 });
             })
@@ -159,7 +162,7 @@ module.exports = {
                         for (y = 0; y < range.length; y++) {
                             lp.push(new Promise(function(rs, rj) {
                                 let dat = JSON.parse(JSON.stringify(range[y]));
-                                update(dat).then(function (params) {
+                                update(dat).then(function(params) {
                                     rs(dat);
                                 }).catch(function(err) {
                                     rs(dat);
@@ -172,7 +175,7 @@ module.exports = {
                             //console.log("se termino", data);
                         }).catch(function(data) {
                             rj(data);
-                            console.log('error',data);
+                            console.log('error', data);
                         });
                     });
                 });
@@ -215,18 +218,18 @@ module.exports = {
             });
         });
     },
-    update_lote_product_price: function(product,callback) {
+    update_lote_product_price: function(product, callback) {
         var intelval = [];
 
         function update(element) {
             return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
-                if(!element.id) return rs({ id: false });
+                if (!element.id) return rs({ id: false });
                 var inParams = {
                     'list_price': element.list_price,
                     'name': element.product
                 };
-                if(element.barcode){
+                if (element.barcode) {
                     inParams.barcode = element.barcode;
                 }
                 odoo.update('product.product', parseInt(element.id, 10), inParams, function(err, product) {
@@ -246,7 +249,7 @@ module.exports = {
                         for (y = 0; y < range.length; y++) {
                             lp.push(new Promise(function(rs, rj) {
                                 let dat = JSON.parse(JSON.stringify(range[y]));
-                                update(dat).then(function (params) {
+                                update(dat).then(function(params) {
                                     rs(dat);
                                 }).catch(function(err) {
                                     rs(dat);
@@ -259,7 +262,7 @@ module.exports = {
                             //console.log("se termino update_lote_product_price");
                         }).catch(function(data) {
                             rj(data);
-                            console.log('error',data);
+                            console.log('error', data);
                         });
                     });
                 });
@@ -271,19 +274,20 @@ module.exports = {
 
         con(Promise.resolve(), intelval, 0);
     },
-    crear_productos_masivos: function(data) {
-        var pro = data.products.split('\n');
-        var promises = [];
-        for (var i = 0; i < pro.length; i++) {
-            var element = pro[i].split(';');
+    crear_productos_masivos: function(product, callback) {
 
-            promises.push(new Promise(function(rs, rj) {
+        if (!callback) callback = function() {};
+        var intelval = [];
+
+        function create(element) {
+            return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
+                if (!element.name) return rs({ id: false });
 
                 var inParams = {
-                    'name': element[1],
-                    'barcode': element[0] || null,
-                    'lst_price': element[2],
+                    'name': element.name,
+                    'barcode': element.codebar || null,
+                    'lst_price': element.price,
                     'taxes_id': null,
                     'supplier_taxes_id': null,
                     'type': 'product'
@@ -292,18 +296,43 @@ module.exports = {
                 odoo.create('product.product', inParams, function(err, product) {
                     if (err) return rj({ err: err, element: element });
                     rs(product);
-                    console.log("fine", product);
+                    console.log("fine crear_productos_masivos", product);
                 });
-            }));
-
+            })
         }
 
-        return new Promise(function(rs, rj) {
-            Promise.all(promises).then(function() {
-                rs();
-            }).catch(function(data) {
-                console.error(".......", data);
-            });
-        });
+        for (var i = 0; i < product.length; i++) {
+            if (i == 19 || i == product.length - 1) {
+                let range = product.splice(0, i + 1);
+                intelval.push(function() {
+                    return new Promise(function(rs, rj) {
+                        let lp = [];
+                        for (y = 0; y < range.length; y++) {
+                            lp.push(new Promise(function(rs, rj) {
+                                let dat = JSON.parse(JSON.stringify(range[y]));
+                                create(dat).then(function(params) {
+                                    rs(dat);
+                                }).catch(function(err) {
+                                    rs(dat);
+                                    console.error(err);
+                                })
+                            }))
+                        }
+                        Promise.all(lp).then(function(data) {
+                            rs(data);
+                            //console.log("se termino crear_productos_masivos");
+                        }).catch(function(data) {
+                            rj(data);
+                            console.log('error', data);
+                        });
+                    });
+                });
+                i = 0;
+            }
+        }
+
+        intelval.push(callback);
+
+        con(Promise.resolve(), intelval, 0);
     }
 };

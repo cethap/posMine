@@ -1,7 +1,7 @@
-process.env.PGUSER = "openpg";
-process.env.PGDATABASE = "testImp";
-process.env.PGPORT = 5432;
-process.env.PGPASSWORD = "openpgpwd";
+//process.env.PGUSER = "openpg";
+//process.env.PGDATABASE = "aqui";
+//process.env.PGPORT = 5432;
+process.env.PGPASSWORD = "I$h3r3";
 process.env.PGHOST = "localhost";
 
 var express = require('express');
@@ -37,7 +37,17 @@ app.get('/crear_productos_masivos', function(req, res) {
 });
 
 app.post('/crear_productos_masivos', function(req, res) {
-    service.crear_productos_masivos(req.body);
+    var pro = req.body.products.split('\n');
+    var products = [];
+    for (var index = 0; index < pro.length; index++) {
+        var element = pro[index].split(';');
+        products.push({
+            codebar: element[0],
+            name: element[1],
+            price: element[2]
+        });
+    }
+    service.crear_productos_masivos(products);
     res.send('aaa');
 });
 
@@ -46,29 +56,40 @@ app.get('/agregar_inventario', function(req, res) {
 });
 
 app.post('/agregar_inventario', function(req, res) {
-    service.add_inventory_product(req.body);
+    var pro = req.body.products.split('\n');
+    var products = [];
+    for (var index = 0; index < pro.length; index++) {
+        var element = pro[index].split(';');
+        products.push({
+            inv: element[0],
+            id: element[1],
+            qty: element[2],
+            location: element[3],
+        });
+    }
+    service.add_inventory_product(products);
     res.send('aaa');
 });
 
 
 app.post('/new_inventary', function(req, res) {
-    service.new_inventory({name:"Inventario "+(new Date()).toGMTString()}).then(function(data){
+    service.new_inventory({ name: "Inventario " + (new Date()).toGMTString() }).then(function(data) {
         let p = JSON.parse(req.body.products);
-        for(i=0;i<p.length;i++){
+        for (i = 0; i < p.length; i++) {
             p[i].inv = data;
         }
         p = JSON.stringify(p);
 
-        service.update_lote_product_price(JSON.parse(p),function(rs1){
-            service.add_inventory_product(JSON.parse(p),function(rs2){
-                service.inventory_done(data).then(function(){
-                    res.send(JSON.parse(p),rs1,rs2);
+        service.update_lote_product_price(JSON.parse(p), function(rs1) {
+            service.add_inventory_product(JSON.parse(p), function(rs2) {
+                service.inventory_done(data).then(function() {
+                    res.send(JSON.parse(p), rs1, rs2);
                 });
             });
         });
 
-    }).catch(function(err){
-        res.send({error:err});
+    }).catch(function(err) {
+        res.send({ error: err });
     });
 });
 
