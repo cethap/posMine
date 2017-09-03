@@ -3,10 +3,18 @@ var client = new Client();
 var Odoo = require('node-odoo');
 var Odoo2 = require('odoo-xmlrpc');
 
+// var paramsEnv = {
+//     host: 'localhost',
+//     port: 8069,
+//     database: 'aqui',
+//     username: 'caja@aqui.com',
+//     password: 'Aqui123'
+// }
+
 var paramsEnv = {
-    host: 'localhost',
+    host: 'aqui-pos.local',
     port: 8069,
-    database: 'aqui',
+    database: 'aqui_2',
     username: 'caja@aqui.com',
     password: 'Aqui123'
 }
@@ -278,16 +286,26 @@ module.exports = {
 
         if (!callback) callback = function() {};
         var intelval = [];
+        var productsArr = [];
+        var productsAcept = [];
+
+        for (var index = 0; index < product.length; index++) {
+            var element = product[index];
+            if (!element.id) {
+                productsAcept.push(element);
+            }
+        }
 
         function create(element) {
             return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
-                if (!element.name) return rs({ id: false });
+                if (!element.product) return rs({ id: false });
+                if (element.id) return rs({ id: false });
 
                 var inParams = {
-                    'name': element.name,
-                    'barcode': element.codebar || null,
-                    'lst_price': element.price,
+                    'name': element.product,
+                    'barcode': element.barcode || null,
+                    'lst_price': element.list_price,
                     'taxes_id': null,
                     'supplier_taxes_id': null,
                     'type': 'product'
@@ -295,15 +313,17 @@ module.exports = {
 
                 odoo.create('product.product', inParams, function(err, product) {
                     if (err) return rj({ err: err, element: element });
-                    rs(product);
+                    element.id = product;
+                    productsArr.push(element);
+                    rs(productsArr);
                     console.log("fine crear_productos_masivos", product);
                 });
             })
         }
 
-        for (var i = 0; i < product.length; i++) {
-            if (i == 19 || i == product.length - 1) {
-                let range = product.splice(0, i + 1);
+        for (var i = 0; i < productsAcept.length; i++) {
+            if (i == 0 || i == productsAcept.length - 1) {
+                let range = productsAcept.splice(0, i + 1);
                 intelval.push(function() {
                     return new Promise(function(rs, rj) {
                         let lp = [];

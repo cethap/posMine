@@ -1,16 +1,19 @@
-//process.env.PGUSER = "openpg";
-//process.env.PGDATABASE = "aqui";
-//process.env.PGPORT = 5432;
+// process.env.PGPASSWORD = "I$h3r3";
+// process.env.PGHOST = "localhost";
+
+process.env.PGUSER = "postgres";
+process.env.PGDATABASE = "aqui_2";
+process.env.PGPORT = 5432;
 process.env.PGPASSWORD = "I$h3r3";
-process.env.PGHOST = "localhost";
+process.env.PGHOST = "aqui-pos.local";
 
 var express = require('express');
 var bodyParser = require('body-parser');
 var service = require('./service');
 var app = express();
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
+app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
 app.get('/', function(req, res) {
@@ -42,13 +45,14 @@ app.post('/crear_productos_masivos', function(req, res) {
     for (var index = 0; index < pro.length; index++) {
         var element = pro[index].split(';');
         products.push({
-            codebar: element[0],
-            name: element[1],
-            price: element[2]
+            barcode: element[0],
+            product: element[1],
+            list_price: element[2]
         });
     }
-    service.crear_productos_masivos(products);
-    res.send('aaa');
+    service.crear_productos_masivos(products, function(data) {
+        res.send({ rs: 1, data: data });
+    });
 });
 
 app.get('/agregar_inventario', function(req, res) {
@@ -75,15 +79,22 @@ app.post('/agregar_inventario', function(req, res) {
 app.post('/new_inventary', function(req, res) {
     service.new_inventory({ name: "Inventario " + (new Date()).toGMTString() }).then(function(data) {
         let p = JSON.parse(req.body.products);
-        for (i = 0; i < p.length; i++) {
-            p[i].inv = data;
-        }
-        p = JSON.stringify(p);
 
-        service.update_lote_product_price(JSON.parse(p), function(rs1) {
-            service.add_inventory_product(JSON.parse(p), function(rs2) {
-                service.inventory_done(data).then(function() {
-                    res.send(JSON.parse(p), rs1, rs2);
+        service.crear_productos_masivos(p, function(news) {
+
+            p = p.concat(news);
+
+            for (i = 0; i < p.length; i++) {
+                p[i].inv = data;
+            }
+
+            p = JSON.stringify(p);
+
+            service.update_lote_product_price(JSON.parse(p), function(rs1) {
+                service.add_inventory_product(JSON.parse(p), function(rs2) {
+                    service.inventory_done(data).then(function() {
+                        res.send(JSON.parse(p), rs1, rs2);
+                    });
                 });
             });
         });
