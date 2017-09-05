@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet">
+    <link href="css/materialize.min.css" rel="stylesheet">
+    <link href="css/icons.css" rel="stylesheet">
+    <script src="js/vue.min.js"></script>
+</head>
+
+<body>
+
+
+    <nav class="red lighten-1" role="navigation">
+        <div class="nav-wrapper container"><a id="logo-container" href="#" class="brand-logo" tabindex="-1">Aqui/Administrador</a>
+        </div>
+    </nav>
+
+    <!--   Icon Section   -->
+    <div class="row" id="app">
+        <div v-if="edit">
+            <h5 style="text-align:center">Editar</h5>
+            <hr>
+            <div class="input-field col s3">
+                <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty" v-on:keyup.esc="exitQty">
+                <label for="barcode" class="active mdl-textfield--floating-label">Codigo de barras</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty" v-on:keyup.esc="exitQty">
+                <label for="name" class="active mdl-textfield--floating-label">Nombre</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="price" type="number" class="validate" v-model="PriceProduct" :readonly="!productSelected" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
+                <label for="price" class="active mdl-textfield--floating-label">Precio</label>
+            </div>
+        </div>
+
+        <div v-if="!edit">
+            <h5 style="text-align:center">Nuevo</h5>
+            <hr>
+            <div class="input-field col s3">
+                <input id="barcodeN" type="text" class="validate" v-model="Nproduct.barcode" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="barcodeN" class="active mdl-textfield--floating-label">Codigo de barras</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="nameN" type="text" class="validate" v-model="Nproduct.product" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="nameN" class="active mdl-textfield--floating-label">Nombre</label>
+            </div>
+            <div class="input-field col s3">
+                <input id="priceN" type="number" class="validate" v-model="Nproduct.list_price" v-on:keyup.enter="addproduct" v-on:keyup.esc="exitQty">
+                <label for="priceN" class="active mdl-textfield--floating-label">Precio</label>
+            </div>
+        </div>
+
+        <div class="col s12">
+            <table class="striped">
+                <thead>
+                    <tr>
+                        <th>Código de barras</th>
+                        <th>Nombre</th>
+                        <th>Categoria</th>
+                        <th>Precio de venta</th>
+                        <th>
+                            <a class="btn-floating waves-effect waves-light red" v-on:click="setNewMode">
+                                <i class="material-icons">add_circle</i>
+                            </a>
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="(product, indx) in productFilter" v-on:click="setProduct(product)">
+                        <td>{{product.barcode}}</td>
+                        <td>{{product.product}}</td>
+                        <td>{{product.category}}</td>
+                        <td>{{product.list_price}}</td>
+                        <td>
+                            <a class="btn-floating waves-effect waves-light red" v-if="!product.id" v-on:click="removeProduct(indx,$event)">
+                                <i class="material-icons">remove_circle_outline</i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button class="btn waves-effect waves-light" v-on:click="newInventory" v-if="enableSendButton">
+                    Crear Inventario
+                <i class="material-icons right">send</i>
+            </button>            
+
+        </div>
+    </div>
+
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script src="js/mainAdmin.js"></script>
+</body>
+
+</html>

@@ -84,6 +84,29 @@ module.exports = {
         });
 
     },
+    productsLite:function(){
+        return new Promise(function(rs, rj) {
+            if (!odooDBIsConnect) return rs({ connect: false });
+            client.query(`
+                SELECT 
+                    pp.id, pt.name product, pp.product_tmpl_id, pp.barcode, 
+                    pt.list_price, pt.description_sale, pt.location_id,
+                    pt.description, pt.type, pc.name category
+                FROM 
+                    product_product pp, 
+                    product_template pt
+                    LEFT JOIN
+                    pos_category pc ON pt.pos_categ_id = pc.id
+                WHERE 
+                    pt.id = pp.product_tmpl_id AND pp.active = true 
+                ORDER BY product ASC
+            `, function(err, res) {
+                //client.end();
+                if (err) return rj(err);
+                rs(res.rows);
+            });            
+        });
+    },
     get_products: function() {
         return new Promise(function(rs, rj) {
             if (!odooDBIsConnect) return rs({ connect: false });
@@ -104,24 +127,6 @@ module.exports = {
                 });
             });
 
-            // client.query(`
-            //     SELECT 
-            //         pp.id, pt.name product, pp.product_tmpl_id, pp.barcode, 
-            //         pt.list_price, pt.description_sale, pt.location_id,
-            //         pt.description, pt.type, pc.name category
-            //     FROM 
-            //         product_product pp, 
-            //         product_template pt
-            //         LEFT JOIN
-            //         pos_category pc ON pt.pos_categ_id = pc.id
-            //     WHERE 
-            //         pt.id = pp.product_tmpl_id AND pp.active = true 
-            //     ORDER BY product ASC
-            // `, function(err, res) {
-            //     //client.end();
-            //     if (err) return rj(err);
-            //     rs(res.rows);
-            // });
         })
     },
     new_inventory: function(inv) {
@@ -232,6 +237,7 @@ module.exports = {
         function update(element) {
             return new Promise(function(rs, rj) {
                 if (!odooJIsConnect) return rs({ connect: false });
+                if (!element) return rs({ id: false });
                 if (!element.id) return rs({ id: false });
                 var inParams = {
                     'list_price': element.list_price,

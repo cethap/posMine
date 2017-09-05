@@ -24,14 +24,18 @@ app.use(express.static('public'));
 app.get('/iniciar', function(req, res) {
     if(!iniciado){
        service.connect().then(function() {
-         res.writeHead(302, { 'location': '/inventario'});
+         res.writeHead(302, { 'location': '/admin'});
          res.end();
          iniciado = true;
        });
     }else{
-       res.writeHead(302, { 'location': '/inventario'});
+       res.writeHead(302, { 'location': '/admin'});
        res.end();
     }
+});
+
+app.get('/admin', function(req, res) {
+    res.sendFile(__dirname + '/views/admin.html');
 });
 
 app.get('/inventario', function(req, res) {
@@ -40,6 +44,12 @@ app.get('/inventario', function(req, res) {
 
 app.get('/products', function(req, res) {
     service.get_products().then(function(data) {
+        res.send(data);
+    });
+});
+
+app.get('/productsLite', function(req, res) {
+    service.productsLite().then(function(data) {
         res.send(data);
     });
 });
@@ -119,6 +129,18 @@ app.post('/new_inventary', function(req, res) {
 
     }).catch(function(err) {
         res.send({ error: err });
+    });
+});
+
+
+app.post('/change_products', function(req, res) {
+    let p = JSON.parse(req.body.products);
+    service.crear_productos_masivos(p, function(news) {
+        p = p.concat(news);
+        p = JSON.stringify(p);
+        service.update_lote_product_price(JSON.parse(p), function(rs1) {
+            res.send([JSON.parse(p),rs1]);
+        });
     });
 });
 
