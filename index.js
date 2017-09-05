@@ -1,22 +1,40 @@
-// process.env.PGPASSWORD = "I$h3r3";
-// process.env.PGHOST = "localhost";
+process.env.PGUSER = 'postgres';
+process.env.PGDATABASE = 'aqui';
+process.env.PGPORT = 5432;
+process.env.PGPASSWORD = "I$h3r3";
+process.env.PGHOST = "localhost";
 
-process.env.PGUSER = "postgres";
+/*process.env.PGUSER = "postgres";
 process.env.PGDATABASE = "aqui_2";
 process.env.PGPORT = 5432;
 process.env.PGPASSWORD = "I$h3r3";
-process.env.PGHOST = "aqui-pos.local";
+process.env.PGHOST = "aqui-pos.local";*/
 
 var express = require('express');
 var bodyParser = require('body-parser');
 var service = require('./service');
 var app = express();
+var iniciado = false;
 
 app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.static('public'));
 
-app.get('/', function(req, res) {
+
+app.get('/iniciar', function(req, res) {
+    if(!iniciado){
+       service.connect().then(function() {
+         res.writeHead(302, { 'location': '/inventario'});
+         res.end();
+         iniciado = true;
+       });
+    }else{
+       res.writeHead(302, { 'location': '/inventario'});
+       res.end();
+    }
+});
+
+app.get('/inventario', function(req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 
@@ -105,8 +123,6 @@ app.post('/new_inventary', function(req, res) {
 });
 
 
-service.connect().then(function() {
-    app.listen(3000, function() {
-        console.log('Example app listening on port 3000!')
-    });
+app.listen(3000, function() {
+    console.log('Example app listening on port 3000!')
 });

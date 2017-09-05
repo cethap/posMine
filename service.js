@@ -3,21 +3,21 @@ var client = new Client();
 var Odoo = require('node-odoo');
 var Odoo2 = require('odoo-xmlrpc');
 
-// var paramsEnv = {
-//     host: 'localhost',
-//     port: 8069,
-//     database: 'aqui',
-//     username: 'caja@aqui.com',
-//     password: 'Aqui123'
-// }
-
 var paramsEnv = {
+    host: 'localhost',
+    port: 8069,
+    database: 'aqui',
+    username: 'caja@aqui.com',
+    password: 'Aqui123'
+}
+
+/*var paramsEnv = {
     host: 'aqui-pos.local',
     port: 8069,
     database: 'aqui_2',
     username: 'caja@aqui.com',
     password: 'Aqui123'
-}
+}*/
 
 var odoo = new Odoo({
     host: paramsEnv.host,

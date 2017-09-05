@@ -4,7 +4,7 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "start": "PGUSER=postgres PGDATABASE=aqui PGPORT=5432 nodemon --inspect=5858 ."
+        "start": "node ."
     },
     "author": "",
     "license": "ISC",

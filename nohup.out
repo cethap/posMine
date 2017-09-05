@@ -1,0 +1,8 @@
+bootstrap_helper: /usr/lib/chromium-browser/nacl_helper: Cannot open ELF file!  errno=2
+[1:1:0903/200043.976143:ERROR:nacl_fork_delegate_linux.cc(315)] Bad NaCl helper startup ack (0 bytes)
+client normal
+Connected to DB
+Connected to Odoo server XML.
+Connected to Odoo server JSON.
+Example app listening on port 3000!
+[2889:2889:0903/200049.596724:ERROR:sandbox_linux.cc(343)] InitializeSandbox() called with multiple threads in process gpu-process. 
