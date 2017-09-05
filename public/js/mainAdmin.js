@@ -150,7 +150,6 @@ var app = new Vue({
             if (this.enabledQty) {
                 $("#barcode").focus();
                 $("#name").focus();
-                $("#qty").focus();
                 $("#price").focus();
                 this.editQty = true;
             }
@@ -202,7 +201,7 @@ var app = new Vue({
                     self.currentProduct = products[0];
                     $("#barcode").focus();
                     $("#name").focus();
-                    $("#qty").focus();
+                    $("#price").focus();
                 });
 
                 self.barcode = products[0].barcode;
