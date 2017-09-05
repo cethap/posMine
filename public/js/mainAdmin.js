@@ -10,7 +10,8 @@ var app = new Vue({
         editQty: false,
         enabledQty: false,
         PriceProduct: 0,
-        edit: true,
+        edit: false,
+        searchflag: true,
         Nproduct: {},
         enableSendButton: true
     },
@@ -71,6 +72,7 @@ var app = new Vue({
         },
         setNewMode: function(){
             this.edit = false;
+            this.searchflag = false;
             this.Nproduct.qty = '0';
             this.Nproduct.list_price = '0';
             Vue.nextTick(function() {
@@ -79,7 +81,8 @@ var app = new Vue({
         },
         addproduct: function() {
             if(this.Nproduct.product.length > 0 && (this.Nproduct.list_price+'').length > 0){
-                this.edit = true;
+                this.edit = false;
+                this.searchflag = true;
                 var pro = JSON.parse(localStorage.getItem("productsNews"));
                 pro.push(JSON.parse(JSON.stringify(this.Nproduct)));
                 localStorage.setItem("productsNews", JSON.stringify(pro));
@@ -91,46 +94,51 @@ var app = new Vue({
             }
         },
         serQty: function() {
-            if (this.productSelected) {
 
-                this.currentProduct.list_price = this.PriceProduct;
-                
-                var pro = JSON.parse(localStorage.getItem("productsNews"));
-                var found = false;
+            this.currentProduct.list_price = this.PriceProduct;
+            this.currentProduct.product = this.nameProduct;
+            this.currentProduct.barcode = this.barcode;
+            
+            var pro = JSON.parse(localStorage.getItem("productsNews"));
+            var found = false;
 
-                for (var index = 0; index < pro.length; index++) {
-                    var element = pro[index];
-                    if (element.id == this.currentProduct.id) {
-                        element.list_price = this.PriceProduct;
-                        found = true;
-                    }
+            for (var index = 0; index < pro.length; index++) {
+                var element = pro[index];
+                if (element.id == this.currentProduct.id) {
+                    element.list_price = this.PriceProduct;
+                    element.product = this.nameProduct;
+                    element.barcode = this.barcode;
+                    found = true;
                 }
-
-                if (!found) {
-                    pro.push(this.currentProduct);
-                }
-
-                localStorage.setItem("productsNews", JSON.stringify(pro));
-                pro = null;
-
-                this.barcode = '';
-                this.nameProduct = '';
-                this.qtyProduct = '';
-                this.PriceProduct = '';
-                this.enabledQty = false;
-                this.editQty = false;
-
-                Vue.nextTick(function() {
-                    $("#barcode").focus();
-                    $("#name").focus();
-                    $("#barcode").focus();
-                    this.currentProduct = null;
-                });
-
             }
+
+            if (!found) {
+                pro.push(this.currentProduct);
+            }
+
+            localStorage.setItem("productsNews", JSON.stringify(pro));
+            pro = null;
+
+            this.barcode = '';
+            this.nameProduct = '';
+            this.qtyProduct = '';
+            this.PriceProduct = '';
+            this.enabledQty = false;
+            this.editQty = false;
+            this.edit = false;
+            this.searchflag = true;
+
+            Vue.nextTick(function() {
+                $("#barcode").focus();
+                $("#name").focus();
+                $("#barcode").focus();
+                this.currentProduct = null;
+            });
+
         },
         exitQty: function() {
-            this.edit = true;
+            this.edit = false;
+            this.searchflag = true;
             this.Nproduct = {};
 
             this.barcode = '';
@@ -151,16 +159,24 @@ var app = new Vue({
                 $("#barcode").focus();
                 $("#name").focus();
                 $("#price").focus();
+                this.edit = true;
+                this.searchflag = false;
                 this.editQty = true;
             }
         },
         setProduct: function(data) {
             this.barcode = data.barcode;
             this.nameProduct = data.product;
-
+            this.PriceProduct = data.list_price;
+            this.currentProduct = data;
+            this.edit = true;
+            this.searchflag = false;
+            var self = this;
             Vue.nextTick(function() {
                 $("#barcode").focus();
                 $("#name").focus();
+                $("#price").focus();
+                self.updateQty();
             });
         },
         newInventory: function() {
@@ -176,6 +192,7 @@ var app = new Vue({
         productFilter: function() {
             var self = this;
             var products = this.products.filter(function(product) {
+                if(self.edit) return false;
                 if (!product.barcode) {
                     product.barcode = '';
                 }
