@@ -24,11 +24,11 @@
         <div v-if="searchflag">
             <hr>
             <div class="input-field col s3">
-                <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.enter="updateQty" v-on:keyup.esc="exitQty">
+                <input id="barcode" type="text" class="validate" v-model="barcode" :readonly="productSelected" v-on:keyup.esc="exitQty">
                 <label for="barcode" class="active mdl-textfield--floating-label">Codigo de barras</label>
             </div>
             <div class="input-field col s3">
-                <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.enter="updateQty" v-on:keyup.esc="exitQty">
+                <input id="name" type="text" class="validate" v-model="nameProduct" :readonly="productSelected" v-on:keyup.esc="exitQty">
                 <label for="name" class="active mdl-textfield--floating-label">Nombre</label>
             </div>
             <div class="input-field col s3">
@@ -41,7 +41,7 @@
             <h5 style="text-align:center">Editar</h5>
             <hr>
             <div class="input-field col s3">
-                <input id="barcode" type="text" class="validate" v-model="barcode" v-on:keyup.enter="serQty" v-on:keyup.esc="exitQty">
+                <input id="barcode" type="text" class="validate" v-model="barcode" v-on:keyup.esc="exitQty">
                 <label for="barcode" class="active mdl-textfield--floating-label">Codigo de barras</label>
             </div>
             <div class="input-field col s3">
